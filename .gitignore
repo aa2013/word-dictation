@@ -21,3 +21,6 @@ config.yaml
 .openidea/
 Thumbs.db
 .DS_Store
+
+# 数据源（本地保留，不入库）
+word.sql

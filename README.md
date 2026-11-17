@@ -25,10 +25,7 @@ word-dictation/
 │   ├── router/             # 路由与 SPA 静态服务（含端到端测试）
 │   ├── util/               # 响应封装、JWT、随机、正则
 │   └── web/                # go:embed 嵌入的前端构建产物
-├── scripts/
-│   ├── build.sh|bat        # 一键构建
-│   └── convert_sql.mjs     # SQL 种子数据转换工具
-└── word.sql                # 初始词库数据源
+├── scripts/                # build.sh|bat 一键构建
 ```
 
 ## 构建
