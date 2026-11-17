@@ -10,6 +10,14 @@ type User struct {
 
 func (User) TableName() string { return "user" }
 
+// Setting 系统级键值配置
+type Setting struct {
+	Key   string `gorm:"primaryKey;column:key;size:64" json:"key"`
+	Value string `gorm:"column:value;not null" json:"value"`
+}
+
+func (Setting) TableName() string { return "setting" }
+
 // Session 登录会话（JWT jti），用于登出吊销
 type Session struct {
 	Id        string    `gorm:"primaryKey;column:id;size:64" json:"id"`

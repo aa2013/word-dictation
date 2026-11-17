@@ -57,6 +57,16 @@ cd ../server && go build -o word-dictation.exe
 - 数据库迁移自动执行：建表并导入内置词库数据（9 个词库、787 个单词、7391 条释义）
 - 注册验证码默认走 `email.debug` 模式（验证码打印到控制台），配置 SMTP 后发送真实邮件
 
+### 系统初始化
+
+首次部署（全新数据库）时，访问系统会自动跳转到 `/setup` 初始化页面，设置管理员账号与密码
+（更新内置管理员用户，不新建）。初始化标记持久化在 `setting` 表：
+
+- 前端检测到未初始化时跳转初始化页，提交前先校验状态
+- 服务端 `POST /api/setup/init` 严格校验未初始化状态，**已初始化后永久返回 403**，防止接口被扫描利用
+
+普通用户通过前端注册流程创建（验证码见 `email.debug` 说明）。
+
 ## 配置
 
 `config.yaml`（首次运行自动生成）：
@@ -74,6 +84,7 @@ cd ../server && go build -o word-dictation.exe
 
 所有接口在 `/api` 前缀下，RESTful 风格，登录后携带 `Authorization: Bearer <token>`。
 
+- 初始化：`GET /api/setup/status`、`POST /api/setup/init`（仅未初始化状态可用）
 - 认证：`POST /api/auth/login`、`POST /api/auth/logout`、`GET /api/auth/me`
 - 用户：`POST /api/users`（注册）、`POST /api/users/codes/*`（邮箱验证码）、`PUT /api/users/password`
 - 词库：`GET/POST /api/libs`、`GET/PUT/DELETE /api/libs/:id`、`POST /api/libs/:id/adopt`

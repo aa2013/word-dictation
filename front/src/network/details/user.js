@@ -9,6 +9,23 @@ export function me() {
     })
 }
 
+export function setupStatus() {
+    return request({
+        url: '/api/setup/status',
+        method: 'get',
+        animation: false,
+        dialog: false
+    })
+}
+
+export function initSystem(data) {
+    return request({
+        url: '/api/setup/init',
+        method: 'post',
+        data: data
+    })
+}
+
 export function login(data) {
     return request({
         url: '/api/auth/login',

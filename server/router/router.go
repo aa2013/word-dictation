@@ -20,6 +20,8 @@ func Setup() *gin.Engine {
 
 	api := r.Group("/api")
 	{
+		api.GET("/setup/status", handler.SetupStatus)
+		api.POST("/setup/init", handler.InitSystem)
 		api.POST("/auth/login", handler.Login)
 		api.POST("/users", handler.Register)
 		api.POST("/users/codes/register", handler.SendRegisterCode)

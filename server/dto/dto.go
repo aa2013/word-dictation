@@ -32,6 +32,12 @@ type UpdatePasswordReq struct {
 	NewPasswordAgain string `json:"newPasswordAgain"`
 }
 
+type SetupReq struct {
+	Account       string `json:"account"`
+	Password      string `json:"password"`
+	PasswordAgain string `json:"passwordAgain"`
+}
+
 type SaveLibReq struct {
 	LibName string `json:"libName"`
 	Desc    string `json:"desc"`

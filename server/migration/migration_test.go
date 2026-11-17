@@ -73,8 +73,8 @@ func TestRunSeedsData(t *testing.T) {
 	}
 	var applied int64
 	db.Raw("SELECT COUNT(*) FROM schema_migrations").Scan(&applied)
-	if applied != 2 {
-		t.Errorf("迁移记录 = %d, 期望 2", applied)
+	if applied != 3 {
+		t.Errorf("迁移记录 = %d, 期望 3", applied)
 	}
 
 	// 重复执行应跳过已应用迁移

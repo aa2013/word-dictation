@@ -6,6 +6,7 @@ import Plan from '../views/Plan.vue'
 import Root from '../views/Root.vue'
 import Login from '../views/Login.vue'
 import Register from '../views/Register.vue'
+import Setup from '../views/Setup.vue'
 import Print from "@/views/Print";
 
 Vue.use(VueRouter)
@@ -59,6 +60,14 @@ const routes = [
         component: Login,
         meta: {
             title: '用户登录'
+        },
+    },
+    {
+        path: '/setup',
+        name: 'setup',
+        component: Setup,
+        meta: {
+            title: '系统初始化'
         },
     },
     {

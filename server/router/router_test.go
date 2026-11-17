@@ -147,6 +147,71 @@ func (r testResponse) num(t *testing.T, key string) int {
 	return int(v)
 }
 
+func TestSetupFlow(t *testing.T) {
+	env := setupEnv(t)
+
+	// 全新库：未初始化
+	res := env.do(t, http.MethodGet, "/api/setup/status", nil, "")
+	if res.status != 200 || !strings.Contains(res.body, `"initialized":false`) {
+		t.Fatalf("初始化状态异常: %s", res.body)
+	}
+
+	hash, _ := bcrypt.GenerateFromPassword([]byte("x"), bcrypt.MinCost)
+	if err := env.db.Create(&model.User{Account: "taken@example.com", UserName: "占用", Password: string(hash)}).Error; err != nil {
+		t.Fatal(err)
+	}
+
+	// 账号被占用 → 409
+	res = env.do(t, http.MethodPost, "/api/setup/init", map[string]any{
+		"account": "taken@example.com", "password": "Passw0rd!", "passwordAgain": "Passw0rd!"}, "")
+	if res.status != 409 {
+		t.Errorf("账号冲突状态码 = %d, 期望 409", res.status)
+	}
+
+	// 两次密码不一致 → 400
+	res = env.do(t, http.MethodPost, "/api/setup/init", map[string]any{
+		"account": "root", "password": "Passw0rd!", "passwordAgain": "diff"}, "")
+	if res.status != 400 {
+		t.Errorf("密码不一致状态码 = %d, 期望 400", res.status)
+	}
+
+	// 正常初始化（更新内置管理员，不新建）
+	res = env.do(t, http.MethodPost, "/api/setup/init", map[string]any{
+		"account": "root", "password": "Passw0rd!", "passwordAgain": "Passw0rd!"}, "")
+	if res.status != 200 {
+		t.Fatalf("初始化失败: %s", res.body)
+	}
+
+	var admin model.User
+	env.db.First(&admin, 1)
+	if admin.Account != "root" {
+		t.Errorf("内置管理员账号未更新: %s", admin.Account)
+	}
+	if admin.Password == "Passw0rd!" || !strings.HasPrefix(admin.Password, "$2a$") {
+		t.Errorf("密码未做 bcrypt 存储")
+	}
+
+	// 状态翻转
+	res = env.do(t, http.MethodGet, "/api/setup/status", nil, "")
+	if !strings.Contains(res.body, `"initialized":true`) {
+		t.Errorf("初始化状态未翻转: %s", res.body)
+	}
+
+	// 已初始化后接口必须拒绝（防扫描关键路径）
+	res = env.do(t, http.MethodPost, "/api/setup/init", map[string]any{
+		"account": "hacker", "password": "x", "passwordAgain": "x"}, "")
+	if res.status != 403 {
+		t.Errorf("已初始化后提交状态码 = %d, 期望 403", res.status)
+	}
+
+	// 新账号可登录
+	res = env.do(t, http.MethodPost, "/api/auth/login",
+		map[string]any{"account": "root", "password": "Passw0rd!"}, "")
+	if res.status != 200 {
+		t.Errorf("初始化后的管理员登录失败: %s", res.body)
+	}
+}
+
 func TestAuthFlow(t *testing.T) {
 	env := setupEnv(t)
 

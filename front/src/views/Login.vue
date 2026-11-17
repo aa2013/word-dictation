@@ -99,6 +99,12 @@ export default {
         path: "/"
       })
     }
+    user.setupStatus().then(res => {
+      if (res.data && res.data.initialized === false) {
+        this.$router.replace("/setup")
+      }
+    }).catch(() => {
+    })
   },
   methods: {
     showForgetPwdDialog() {
