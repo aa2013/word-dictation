@@ -1,4 +1,4 @@
-// Package storage 封面图片等本地文件存储（替代旧版七牛云）。
+// Package storage 封面图片等本地文件存储。
 package storage
 
 import (

@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-// LocalTime 统一 "yyyy-MM-dd HH:mm:ss" 文本格式，与种子数据（原 MySQL dump）的 datetime 兼容。
+// LocalTime 统一 "yyyy-MM-dd HH:mm:ss" 文本格式，与种子数据的 datetime 兼容。
 type LocalTime struct {
 	time.Time
 }

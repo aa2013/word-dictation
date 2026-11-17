@@ -22,3 +22,6 @@ Thumbs.db
 
 # 冒烟/临时
 .smoke/
+
+# 运行日志
+server.log

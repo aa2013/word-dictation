@@ -1,28 +1,34 @@
-# word-dictation（Go + Vue2 + SQLite 单体版）
+# word-dictation
 
-单词听写/默词本应用。由原 `Java Spring Boot + MySQL + Redis + Vue2` 项目完整移植为
-**Go (gin + gorm) + SQLite（纯 Go 驱动，无 CGO）+ Vue2** 的单二进制应用，前端通过
-`go:embed` 打进后端，最终产物只有一个可执行文件。
+单词听写/默词本应用。Go 单二进制后端 + Vue2 前端，SQLite 存储，前端经 `go:embed` 打包进
+后端，构建产物只有一个可执行文件。
+
+- 后端：gin + gorm + SQLite（纯 Go 驱动 [glebarez/sqlite](https://github.com/glebarez/sqlite)，无 CGO，可任意交叉编译）
+- 前端：Vue2 + Vuetify + Element UI
+- 存储：SQLite（WAL 模式），版本化迁移管理表结构与种子数据
+- 认证：JWT(HS512) + `session` 表吊销 + bcrypt
 
 ## 目录结构
 
 ```
 word-dictation/
-├── front/                  # Vue2 前端（Vuetify + Element UI）
+├── front/                  # Vue2 前端
 ├── server/                 # Go 后端
 │   ├── main.go
 │   ├── config/             # 配置加载（config.yaml，缺省自动生成）
-│   ├── migration/          # SQLite 版本化迁移（含 MySQL 数据导入的种子迁移）
+│   ├── migration/          # 版本化迁移 + 种子数据
 │   ├── handler/            # 控制器
-│   ├── service/            # 业务逻辑（含在线词典翻译器移植）
+│   ├── service/            # 业务逻辑（含在线词典翻译器）
 │   ├── model/              # GORM 模型
 │   ├── dto/                # 请求/响应 DTO
 │   ├── middleware/         # JWT 认证 / CORS
 │   ├── router/             # 路由与 SPA 静态服务（含端到端测试）
-│   ├── util/               # 结果封装、JWT、随机、正则
-│   ├── web/                # go:embed 嵌入的前端构建产物
-│   └── scripts/            # word.sql → SQLite 转换脚本（已执行，留存备查）
-└── scripts/build.sh|bat    # 一键构建脚本
+│   ├── util/               # 响应封装、JWT、随机、正则
+│   └── web/                # go:embed 嵌入的前端构建产物
+├── scripts/
+│   ├── build.sh|bat        # 一键构建
+│   └── convert_sql.mjs     # SQL 种子数据转换工具
+└── word.sql                # 初始词库数据源
 ```
 
 ## 构建
@@ -39,8 +45,7 @@ cd front && npm install && npm run build
 cd ../server && go build -o word-dictation.exe
 ```
 
-> 旧版 vue-cli 4 在 Node 17+ 构建需要 `NODE_OPTIONS=--openssl-legacy-provider`，
-> 构建脚本已自动处理。
+> vue-cli 4 在 Node 17+ 构建需要 `NODE_OPTIONS=--openssl-legacy-provider`，构建脚本已自动处理。
 
 ## 运行
 
@@ -48,35 +53,41 @@ cd ../server && go build -o word-dictation.exe
 ./word-dictation.exe          # 默认端口 8099，浏览器打开 http://127.0.0.1:8099
 ```
 
-- 首次运行自动生成 `config.yaml`（可改端口/SMTP 等，JWT 密钥自动随机生成）与 `data/word-dictation.db`
-- SQLite 通过版本化迁移自动建表并导入原 MySQL 全量数据（9 个词库、787 个单词、7391 条释义、13 个方案等）
-- 原库中的 `admin` 账号保留但密码未知（旧 bcrypt 哈希），建议走注册流程创建自己的账号：
-  本地未配置 SMTP 时 `email.debug: true`（默认开启），验证码直接打印到控制台
+- 首次运行自动生成 `config.yaml`（JWT 密钥自动随机生成）与 `data/word-dictation.db`
+- 数据库迁移自动执行：建表并导入内置词库数据（9 个词库、787 个单词、7391 条释义）
+- 注册验证码默认走 `email.debug` 模式（验证码打印到控制台），配置 SMTP 后发送真实邮件
 
-## API 与认证（重新设计）
+## 配置
 
-- 所有接口在 `/api` 前缀下，RESTful 风格
-- 认证：`POST /api/auth/login`（bcrypt 校验）签发 **JWT(HS512)**，`Authorization: Bearer <token>` 携带；
-  服务端 `session` 表保存 jti 用于登出吊销与过期清理（替代 Redis）
-- 响应包体 `{code, message, data}`，HTTP 状态码即语义：
-  `400` 参数错误 / `401` 未登录或密码错误 / `403` 无权限 / `404` 不存在 / `409` 重复 / `502` 翻译源失败 / `500` 内部错误
-- 忘记密码/注册验证码存进程内存（5 分钟有效，1 分钟重发冷却）
+`config.yaml`（首次运行自动生成）：
 
-## 主要改动（相对旧版）
+| 配置 | 说明 | 默认值 |
+| --- | --- | --- |
+| `port` | 监听端口 | `8099` |
+| `db.path` | SQLite 数据库路径 | `data/word-dictation.db` |
+| `storage.dir` | 封面图片存储目录（`/covers/*` 提供访问） | `data/storage` |
+| `jwt.secret` | 签名密钥（自动生成，勿泄露） | 随机 |
+| `jwt.tokenDays` / `jwt.rememberDays` | 登录态有效期（天），后者为勾选"记住我" | `7` / `30` |
+| `email.*` | SMTP 配置；`debug: true` 时不真正发信，验证码打印到控制台 | `debug: true` |
 
-| 旧版 | 新版 |
-| --- | --- |
-| MySQL | SQLite（`glebarez/sqlite` 纯 Go 驱动，免 CGO、免交叉编译） |
-| Redis（会话 + 邮件验证码） | SQLite `session` 表 + 进程内 TTL 缓存 |
-| RSA 加密登录 + 密钥混淆 | 明文 JSON 登录 + bcrypt（传输安全交给 HTTPS），JWT 重新设计 |
-| 恒定 HTTP 200 + 自定义业务码 | 标准 HTTP 状态码 + `{code, message, data}` |
-| 七牛云存储封面 | 本地磁盘 `data/storage`，经 `/covers/*` 提供服务 |
-| 前端 axios 硬编码后端地址 | 生产同源相对路径 + devServer 代理，配合 embed 单体部署 |
-| 无迁移机制 | `schema_migrations` 版本化迁移，后续加功能直接追加 SQL 文件 |
+## API
 
-## 后续加功能
+所有接口在 `/api` 前缀下，RESTful 风格，登录后携带 `Authorization: Bearer <token>`。
 
-在 `server/migration/migrations/` 下新增 `000X_名称.sql`（重启自动执行），模型对应调整 `model/` 即可。
+- 认证：`POST /api/auth/login`、`POST /api/auth/logout`、`GET /api/auth/me`
+- 用户：`POST /api/users`（注册）、`POST /api/users/codes/*`（邮箱验证码）、`PUT /api/users/password`
+- 词库：`GET/POST /api/libs`、`GET/PUT/DELETE /api/libs/:id`、`POST /api/libs/:id/adopt`
+- 单词：`GET/POST /api/libs/:id/words`、`GET /api/libs/:id/random-words`、
+  `PUT /api/libs/:id/default-explain`、`GET /api/words/:wordId/explains`
+- 方案：`GET/POST /api/plans`、`GET /api/plans/:id/words`、`DELETE /api/plans/:id`
+
+响应包体 `{code, message, data}`，HTTP 状态码即语义：`400` 参数错误 / `401` 未登录或密码错误 /
+`403` 无权限 / `404` 不存在 / `409` 重复 / `502` 词典查询失败 / `500` 内部错误。
+
+## 数据迁移
+
+`server/migration/migrations/` 下按 `000N_名称.sql` 命名的 SQL 脚本在启动时按序自动执行，
+记录存于 `schema_migrations` 表。新增功能直接追加迁移文件并调整 `model/`。
 
 ## 测试
 
@@ -84,5 +95,5 @@ cd ../server && go build -o word-dictation.exe
 cd server && go test ./...
 ```
 
-覆盖：迁移与种子数据完整性（含 `o'clock` 等转义用例）、登录/登出/会话吊销、注册验证码流程、
-词库增删与权限、单词导入（mock 翻译器）、重复导入 409、默认释义切换、方案 CRUD。
+覆盖：迁移与种子数据完整性、登录/登出/会话吊销、注册验证码流程、词库权限、
+单词导入（mock 词典）、默认释义切换、方案 CRUD。
