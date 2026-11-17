@@ -1,0 +1,28 @@
+// Package storage 封面图片等本地文件存储（替代旧版七牛云）。
+package storage
+
+import (
+	"encoding/base64"
+	"fmt"
+	"os"
+	"path/filepath"
+
+	"worddictation/server/global"
+	"worddictation/server/util"
+)
+
+func UploadCover(libId int, b64Data string) (string, error) {
+	data, err := base64.StdEncoding.DecodeString(util.StripBase64Prefix(b64Data))
+	if err != nil {
+		return "", fmt.Errorf("封面 base64 解码失败: %w", err)
+	}
+	rel := fmt.Sprintf("wordDictation/cover%d.jpg", libId)
+	abs := filepath.Join(global.Config.Storage.Dir, rel)
+	if err := os.MkdirAll(filepath.Dir(abs), 0o755); err != nil {
+		return "", err
+	}
+	if err := os.WriteFile(abs, data, 0o644); err != nil {
+		return "", err
+	}
+	return "/covers/" + rel, nil
+}

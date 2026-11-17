@@ -1,0 +1,24 @@
+# Go
+server/word-dictation.exe
+server/word-dictation
+*.exe
+*.db
+server/data/
+data/
+
+# Node / 前端
+front/node_modules/
+front/dist/
+front/.npm-debug.log*
+
+# IDE / 系统文件
+.idea/
+.vscode/
+Thumbs.db
+.DS_Store
+
+# 冒烟/临时
+.smoke/
+
+# 冒烟/临时
+.smoke/
