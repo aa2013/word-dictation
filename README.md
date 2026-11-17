@@ -39,10 +39,12 @@ word-dictation/
 ./scripts/build.sh          # Linux / macOS / Git Bash
 scripts\build.bat           # Windows
 
+# 产物输出到 build/word-dictation(.exe)
+
 # 或手动分步
 cd front && npm install && npm run build
 # 将 front/dist 拷贝到 server/web/dist 后：
-cd ../server && go build -o word-dictation.exe
+cd ../server && go build -o ../build/word-dictation.exe
 ```
 
 > vue-cli 4 在 Node 17+ 构建需要 `NODE_OPTIONS=--openssl-legacy-provider`，构建脚本已自动处理。

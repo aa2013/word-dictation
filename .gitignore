@@ -1,6 +1,5 @@
 # Go
-server/word-dictation.exe
-server/word-dictation
+build/
 *.exe
 *.db
 server/data/
@@ -11,20 +10,14 @@ front/node_modules/
 front/dist/
 front/.npm-debug.log*
 
+# 运行日志 / 本地运行目录
+server.log
+config.yaml
+.run/
+
 # IDE / 系统文件
 .idea/
 .vscode/
+.openidea/
 Thumbs.db
 .DS_Store
-
-# 冒烟/临时
-.smoke/
-
-# 冒烟/临时
-.smoke/
-
-# 运行日志
-server.log
-
-# 本地运行目录
-.run/
