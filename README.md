@@ -9,18 +9,17 @@
 ```
 word-dictation/
 ├── front/                  # Vue2 前端（Vuetify + Element UI）
-│   └── src/...
 ├── server/                 # Go 后端
 │   ├── main.go
 │   ├── config/             # 配置加载（config.yaml，缺省自动生成）
 │   ├── migration/          # SQLite 版本化迁移（含 MySQL 数据导入的种子迁移）
-│   │   └── migrations/     # 0001 建表、0002 导入 word.sql 全量数据
-│   ├── handler/            # 控制器（user/lib/word/plan）
+│   ├── handler/            # 控制器
 │   ├── service/            # 业务逻辑（含在线词典翻译器移植）
 │   ├── model/              # GORM 模型
-│   ├── dto/                # 响应 DTO
+│   ├── dto/                # 请求/响应 DTO
 │   ├── middleware/         # JWT 认证 / CORS
-│   ├── util/               # 结果码、RSA、随机、正则
+│   ├── router/             # 路由与 SPA 静态服务（含端到端测试）
+│   ├── util/               # 结果封装、JWT、随机、正则
 │   ├── web/                # go:embed 嵌入的前端构建产物
 │   └── scripts/            # word.sql → SQLite 转换脚本（已执行，留存备查）
 └── scripts/build.sh|bat    # 一键构建脚本
@@ -28,20 +27,19 @@ word-dictation/
 
 ## 构建
 
-依赖：Go 1.21+、Node 14+（建议 Node 16~22）。
+依赖：Go 1.21+、Node 16+。
 
 ```bash
-# 一键构建（前端 + 后端单二进制）
 ./scripts/build.sh          # Linux / macOS / Git Bash
 scripts\build.bat           # Windows
 
 # 或手动分步
 cd front && npm install && npm run build
-# 构建产物 front/dist 拷贝到 server/web/dist 后：
+# 将 front/dist 拷贝到 server/web/dist 后：
 cd ../server && go build -o word-dictation.exe
 ```
 
-> 注意：旧版 vue-cli 4 在 Node 17+ 构建需要 `NODE_OPTIONS=--openssl-legacy-provider`，
+> 旧版 vue-cli 4 在 Node 17+ 构建需要 `NODE_OPTIONS=--openssl-legacy-provider`，
 > 构建脚本已自动处理。
 
 ## 运行
@@ -50,21 +48,41 @@ cd ../server && go build -o word-dictation.exe
 ./word-dictation.exe          # 默认端口 8099，浏览器打开 http://127.0.0.1:8099
 ```
 
-- 首次运行自动在工作目录生成 `config.yaml`（可改端口/邮箱 SMTP 等）与 `data/word-dictation.db`
-- SQLite 数据库通过版本化迁移自动建表并导入原 MySQL 全量数据（9 个词库、约 780 个单词、全部释义/方案等）
-- 原管理员账号保留（`admin`，密码同原系统 bcrypt 哈希）
+- 首次运行自动生成 `config.yaml`（可改端口/SMTP 等，JWT 密钥自动随机生成）与 `data/word-dictation.db`
+- SQLite 通过版本化迁移自动建表并导入原 MySQL 全量数据（9 个词库、787 个单词、7391 条释义、13 个方案等）
+- 原库中的 `admin` 账号保留但密码未知（旧 bcrypt 哈希），建议走注册流程创建自己的账号：
+  本地未配置 SMTP 时 `email.debug: true`（默认开启），验证码直接打印到控制台
+
+## API 与认证（重新设计）
+
+- 所有接口在 `/api` 前缀下，RESTful 风格
+- 认证：`POST /api/auth/login`（bcrypt 校验）签发 **JWT(HS512)**，`Authorization: Bearer <token>` 携带；
+  服务端 `session` 表保存 jti 用于登出吊销与过期清理（替代 Redis）
+- 响应包体 `{code, message, data}`，HTTP 状态码即语义：
+  `400` 参数错误 / `401` 未登录或密码错误 / `403` 无权限 / `404` 不存在 / `409` 重复 / `502` 翻译源失败 / `500` 内部错误
+- 忘记密码/注册验证码存进程内存（5 分钟有效，1 分钟重发冷却）
 
 ## 主要改动（相对旧版）
 
 | 旧版 | 新版 |
 | --- | --- |
-| MySQL | SQLite（纯 Go 驱动 `glebarez/sqlite`，免 CGO、免交叉编译烦恼） |
-| Redis（token 会话 + 邮件验证码） | SQLite `token` 表 + 进程内 TTL 缓存 |
-| Spring Security 过滤器链 | gin 中间件（错误码与响应包体结构保持不变） |
+| MySQL | SQLite（`glebarez/sqlite` 纯 Go 驱动，免 CGO、免交叉编译） |
+| Redis（会话 + 邮件验证码） | SQLite `session` 表 + 进程内 TTL 缓存 |
+| RSA 加密登录 + 密钥混淆 | 明文 JSON 登录 + bcrypt（传输安全交给 HTTPS），JWT 重新设计 |
+| 恒定 HTTP 200 + 自定义业务码 | 标准 HTTP 状态码 + `{code, message, data}` |
 | 七牛云存储封面 | 本地磁盘 `data/storage`，经 `/covers/*` 提供服务 |
-| 前端 axios 硬编码 `http://localhost:8099` | 生产模式同源相对路径，配合 embed 单体部署 |
+| 前端 axios 硬编码后端地址 | 生产同源相对路径 + devServer 代理，配合 embed 单体部署 |
 | 无迁移机制 | `schema_migrations` 版本化迁移，后续加功能直接追加 SQL 文件 |
 
 ## 后续加功能
 
-在 `server/migration/migrations/` 下新增 `000X_xxx.sql`（重启自动执行），模型对应调整 `model/` 即可。
+在 `server/migration/migrations/` 下新增 `000X_名称.sql`（重启自动执行），模型对应调整 `model/` 即可。
+
+## 测试
+
+```bash
+cd server && go test ./...
+```
+
+覆盖：迁移与种子数据完整性（含 `o'clock` 等转义用例）、登录/登出/会话吊销、注册验证码流程、
+词库增删与权限、单词导入（mock 翻译器）、重复导入 409、默认释义切换、方案 CRUD。
