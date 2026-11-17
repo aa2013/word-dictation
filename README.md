@@ -74,7 +74,7 @@ cd ../server && go build -o ../build/word-dictation.exe
 | --- | --- | --- |
 | `port` | 监听端口 | `8099` |
 | `db.path` | SQLite 数据库路径 | `data/word-dictation.db` |
-| `storage.dir` | 封面图片存储目录（`/covers/*` 提供访问） | `data/storage` |
+| `storage.dir` | 封面图片存储目录（含内置默认封面 `default.jpg`，经 `/covers/*` 提供访问） | `data/storage` |
 | `jwt.secret` | 签名密钥（自动生成，勿泄露） | 随机 |
 | `jwt.tokenDays` / `jwt.rememberDays` | 登录态有效期（天），后者为勾选"记住我" | `7` / `30` |
 | `email.*` | SMTP 配置；`debug: true` 时不真正发信，验证码打印到控制台 | `debug: true` |
