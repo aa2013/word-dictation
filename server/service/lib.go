@@ -41,7 +41,7 @@ func CreateLib(userId int, req dto.SaveLibReq) (int, error) {
 	lib := model.Lib{
 		LibName:    libName,
 		Desc:       req.Desc,
-		Cover:      "http://img.coclyun.top/wordDictation/default_cover.jpg",
+		Cover:      "/covers/default.jpg",
 		Creator:    userId,
 		Common:     req.Common,
 		CreateTime: model.Now(),

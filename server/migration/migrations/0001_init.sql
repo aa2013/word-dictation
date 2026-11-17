@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS `lib` (
   `id` INTEGER PRIMARY KEY AUTOINCREMENT,
   `lib_name` TEXT NOT NULL,
   `desc` TEXT NOT NULL,
-  `cover` TEXT NOT NULL DEFAULT 'http://img.coclyun.top/wordDictation/default_cover.jpg',
+  `cover` TEXT NOT NULL DEFAULT '/covers/default.jpg',
   `creator` INTEGER NOT NULL,
   `common` NUMERIC NOT NULL DEFAULT 0,
   `create_time` TEXT NOT NULL,

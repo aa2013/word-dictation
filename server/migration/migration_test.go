@@ -77,6 +77,13 @@ func TestRunSeedsData(t *testing.T) {
 		t.Errorf("迁移记录 = %d, 期望 3", applied)
 	}
 
+	// 内置封面必须全部为本地路径，不依赖远程 URL
+	var remoteCovers int64
+	db.Raw("SELECT COUNT(*) FROM lib WHERE cover LIKE '%img.coclyun.top%'").Scan(&remoteCovers)
+	if remoteCovers != 0 {
+		t.Errorf("仍存在远程封面 URL 的词库: %d", remoteCovers)
+	}
+
 	// 重复执行应跳过已应用迁移
 	if err := Run(db); err != nil {
 		t.Fatalf("重复迁移失败: %v", err)

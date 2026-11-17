@@ -3,15 +3,15 @@
 -- 由 scripts/convert_sql.mjs 从 word.sql (MySQL dump) 自动转换生成
 -- 仅数据（表结构见 0001_init.sql）
 -- ------------------------------------------------------------
-INSERT INTO `lib` VALUES (1, '总词库', '本词库中包含系统中所有的单词', 'http://img.coclyun.top/wordDictation/default_cover.jpg', 1, 1, '2023-06-13 11:34:56', '2023-07-31 13:51:54');
-INSERT INTO `lib` VALUES (2, '人教PEP三年级上', '人教PEP三年级上', 'http://img.coclyun.top/wordDictation/default_cover.jpg', 1, 1, '2023-07-31 13:34:35', '2023-08-03 18:24:58');
-INSERT INTO `lib` VALUES (3, '人教PEP三年级下', '人教PEP三年级下', 'http://img.coclyun.top/wordDictation/default_cover.jpg', 1, 1, '2023-07-31 13:34:43', '2023-07-31 13:42:07');
-INSERT INTO `lib` VALUES (4, '人教PEP四年级上', '人教PEP四年级上', 'http://img.coclyun.top/wordDictation/default_cover.jpg', 1, 1, '2023-07-31 13:34:51', '2023-08-12 18:15:24');
-INSERT INTO `lib` VALUES (5, '人教PEP四年级下', '人教PEP四年级下', 'http://img.coclyun.top/wordDictation/default_cover.jpg', 1, 1, '2023-07-31 13:34:55', '2023-08-18 20:22:42');
-INSERT INTO `lib` VALUES (6, '人教PEP五年级上', '人教PEP五年级上', 'http://img.coclyun.top/wordDictation/default_cover.jpg', 1, 1, '2023-07-31 13:35:11', '2023-07-31 13:47:26');
-INSERT INTO `lib` VALUES (7, '人教PEP五年级下', '人教PEP五年级下', 'http://img.coclyun.top/wordDictation/default_cover.jpg', 1, 1, '2023-07-31 13:35:17', '2023-07-31 13:48:56');
-INSERT INTO `lib` VALUES (8, '人教PEP六年级上', '人教PEP六年级上', 'http://img.coclyun.top/wordDictation/default_cover.jpg', 1, 1, '2023-07-31 13:35:28', '2023-07-31 13:51:01');
-INSERT INTO `lib` VALUES (9, '人教PEP六年级下', '人教PEP六年级下', 'http://img.coclyun.top/wordDictation/default_cover.jpg', 1, 1, '2023-07-31 13:35:35', '2023-08-11 18:51:54');
+INSERT INTO `lib` VALUES (1, '总词库', '本词库中包含系统中所有的单词', '/covers/default.jpg', 1, 1, '2023-06-13 11:34:56', '2023-07-31 13:51:54');
+INSERT INTO `lib` VALUES (2, '人教PEP三年级上', '人教PEP三年级上', '/covers/default.jpg', 1, 1, '2023-07-31 13:34:35', '2023-08-03 18:24:58');
+INSERT INTO `lib` VALUES (3, '人教PEP三年级下', '人教PEP三年级下', '/covers/default.jpg', 1, 1, '2023-07-31 13:34:43', '2023-07-31 13:42:07');
+INSERT INTO `lib` VALUES (4, '人教PEP四年级上', '人教PEP四年级上', '/covers/default.jpg', 1, 1, '2023-07-31 13:34:51', '2023-08-12 18:15:24');
+INSERT INTO `lib` VALUES (5, '人教PEP四年级下', '人教PEP四年级下', '/covers/default.jpg', 1, 1, '2023-07-31 13:34:55', '2023-08-18 20:22:42');
+INSERT INTO `lib` VALUES (6, '人教PEP五年级上', '人教PEP五年级上', '/covers/default.jpg', 1, 1, '2023-07-31 13:35:11', '2023-07-31 13:47:26');
+INSERT INTO `lib` VALUES (7, '人教PEP五年级下', '人教PEP五年级下', '/covers/default.jpg', 1, 1, '2023-07-31 13:35:17', '2023-07-31 13:48:56');
+INSERT INTO `lib` VALUES (8, '人教PEP六年级上', '人教PEP六年级上', '/covers/default.jpg', 1, 1, '2023-07-31 13:35:28', '2023-07-31 13:51:01');
+INSERT INTO `lib` VALUES (9, '人教PEP六年级下', '人教PEP六年级下', '/covers/default.jpg', 1, 1, '2023-07-31 13:35:35', '2023-08-11 18:51:54');
 INSERT INTO `lib_word` VALUES (1, 1);
 INSERT INTO `lib_word` VALUES (2, 1);
 INSERT INTO `lib_word` VALUES (1, 2);

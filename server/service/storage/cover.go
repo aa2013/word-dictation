@@ -2,6 +2,7 @@
 package storage
 
 import (
+	_ "embed"
 	"encoding/base64"
 	"fmt"
 	"os"
@@ -10,6 +11,18 @@ import (
 	"worddictation/server/global"
 	"worddictation/server/util"
 )
+
+//go:embed default_cover.jpg
+var defaultCover []byte
+
+// EnsureDefaultCover 启动时把内置默认封面落到存储目录，供 /covers/default.jpg 访问
+func EnsureDefaultCover() error {
+	path := filepath.Join(global.Config.Storage.Dir, "default.jpg")
+	if _, err := os.Stat(path); err == nil {
+		return nil
+	}
+	return os.WriteFile(path, defaultCover, 0o644)
+}
 
 func UploadCover(libId int, b64Data string) (string, error) {
 	data, err := base64.StdEncoding.DecodeString(util.StripBase64Prefix(b64Data))

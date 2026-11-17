@@ -14,6 +14,7 @@ import (
 	"worddictation/server/global"
 	"worddictation/server/migration"
 	"worddictation/server/router"
+	"worddictation/server/service/storage"
 	"worddictation/server/util"
 )
 
@@ -32,6 +33,9 @@ func main() {
 	}
 	if err := os.MkdirAll(cfg.Storage.Dir, 0o755); err != nil {
 		log.Fatalf("创建存储目录失败: %v", err)
+	}
+	if err := storage.EnsureDefaultCover(); err != nil {
+		log.Fatalf("写入默认封面失败: %v", err)
 	}
 
 	dsn := cfg.DB.Path + "?_pragma=busy_timeout(5000)&_pragma=journal_mode(WAL)&_pragma=foreign_keys(ON)"
